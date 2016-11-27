@@ -1,19 +1,23 @@
 package com.junction.tarjous;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -30,6 +34,8 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import io.proximi.proximiiolibrary.Proximiio;
@@ -46,6 +52,10 @@ import io.proximi.proximiiolibrary.ProximiioPlace;
  * Proximiio Demo
  */
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+    private final static String TAG = "ProximiioDemo";
+    ArrayList<ProximiioGeofence> geofences;
+    String EMAIL = "akaizat1@gmail.com";
+    String PASSWORD = "qwerty";
     private GoogleMap map;
     private boolean zoomed;
     private LocationSource.OnLocationChangedListener locationListener;
@@ -56,22 +66,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ProximiioImageCallback imageCallback;
     private GroundOverlay floorPlan;
     private double currentLatitude, currentLongitude;
-    ArrayList<ProximiioGeofence>geofences;
-
-    private final static String TAG = "ProximiioDemo";
-    String EMAIL="akaizat1@gmail.com";
-    String PASSWORD="qwerty";
     private Polyline line;
     private MaterialSearchView searchView;
+    private LinearLayout productsLayout;
+    private HashMap products;
+    private LayoutInflater inflater;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        products = new HashMap();
+        inflater = LayoutInflater.from(this);
+        addProducts();
+        addProductsView();
         geofences= new ArrayList<>();
-
-
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
         searchView.setVoiceSearch(false);
         searchView.setCursorDrawable(R.drawable.custom_cursor);
@@ -377,4 +387,42 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
+
+    private void addProducts() {
+        products.put("Product 1", R.drawable.backgrd);
+        products.put("Product 2", R.drawable.ball);
+        products.put("Product 3", R.drawable.backgrd);
+        products.put("Product 4", R.drawable.ball);
+        products.put("Product 5", R.drawable.backgrd);
+        products.put("Product 6", R.drawable.ball);
+        products.put("Product 7", R.drawable.backgrd);
+    }
+
+    private void addProductsView() {
+        String name;
+        int image;
+        productsLayout = (LinearLayout) findViewById(R.id.products_layout);
+
+        Iterator iterator = products.keySet().iterator();
+        while (iterator.hasNext()) {
+            name = (String) iterator.next();
+            image = (Integer) products.get(name);
+
+            View view = inflater.inflate(R.layout.products_item, productsLayout, false);
+            ImageView img = (ImageView) view.findViewById(R.id.product_image);
+            img.setImageResource(image);
+            TextView txt = (TextView) view.findViewById(R.id.product_name);
+            txt.setText(name);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getApplicationContext(), "Clicked", Toast.LENGTH_LONG).show();
+                }
+            });
+            productsLayout.addView(view);
+        }
+
+    }
+
+
 }
