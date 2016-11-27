@@ -18,6 +18,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -32,11 +40,14 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import io.proximi.proximiiolibrary.Proximiio;
 import io.proximi.proximiiolibrary.ProximiioFactory;
@@ -53,6 +64,7 @@ import io.proximi.proximiiolibrary.ProximiioPlace;
  */
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     private final static String TAG = "ProximiioDemo";
+    private final static String URL = "https://tarjous-beta.herokuapp.com/products";
     ArrayList<ProximiioGeofence> geofences;
     String EMAIL = "akaizat1@gmail.com";
     String PASSWORD = "qwerty";
@@ -96,6 +108,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Log.d(TAG,items.toString());
                     for (String itemName:items){
 
+                        String requestUrl = URL + "\"" + itemName;
+                        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                                (Request.Method.GET, requestUrl, null, new Response.Listener<JSONObject>() {
+
+                                    @Override
+                                    public void onResponse(JSONObject response) {
+                                        //String product = response.getString()
+                                    }
+                                }, new Response.ErrorListener() {
+
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        // TODO Auto-generated method stub
+
+                                    }
+                                });
+
+
+                        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+                        requestQueue.add(jsObjRequest);
                         for (ProximiioGeofence geofence:geofences){
 
                             if(itemName.equals(geofence.getName())){

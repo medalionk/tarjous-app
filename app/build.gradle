@@ -49,6 +49,7 @@ dependencies {
     compile 'com.google.android.gms:play-services:10.0.0'
     compile 'io.proximi.proximiiolibrary:proximiiolibrary:2.4_B7'
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
+    compile 'com.android.volley:volley:1.0.0'
 
     testCompile 'junit:junit:4.12'
 }
