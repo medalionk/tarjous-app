@@ -64,7 +64,6 @@ import io.proximi.proximiiolibrary.ProximiioPlace;
  */
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     private final static String TAG = "ProximiioDemo";
-    private final static String URL = "https://tarjous-beta.herokuapp.com/products";
     ArrayList<ProximiioGeofence> geofences;
     String EMAIL = "akaizat1@gmail.com";
     String PASSWORD = "qwerty";
@@ -78,12 +77,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ProximiioImageCallback imageCallback;
     private GroundOverlay floorPlan;
     private double currentLatitude, currentLongitude;
-    private Polyline line;
+    private   ArrayList<Polyline> line= new ArrayList<>();
     private MaterialSearchView searchView;
     private LinearLayout productsLayout;
     private HashMap products;
     private LayoutInflater inflater;
-
+TextView distance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         inflater = LayoutInflater.from(this);
         addProducts();
         addProductsView();
+        distance=(TextView)findViewById(R.id.distance );
         geofences= new ArrayList<>();
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
         searchView.setVoiceSearch(false);
@@ -102,44 +102,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+
+
                 if(query.length()>0){
                     ArrayList<ProximiioGeofence>selectedGeofences= new ArrayList<ProximiioGeofence>();
                     List<String> items = Arrays.asList(query.split("\\s* \\s*"));
                     Log.d(TAG,items.toString());
                     for (String itemName:items){
 
-                        String requestUrl = URL + "\"" + itemName;
-                        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                                (Request.Method.GET, requestUrl, null, new Response.Listener<JSONObject>() {
-
-                                    @Override
-                                    public void onResponse(JSONObject response) {
-                                        //String product = response.getString()
-                                    }
-                                }, new Response.ErrorListener() {
-
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        // TODO Auto-generated method stub
-
-                                    }
-                                });
-
-
-                        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-                        requestQueue.add(jsObjRequest);
                         for (ProximiioGeofence geofence:geofences){
 
                             if(itemName.equals(geofence.getName())){
                                 selectedGeofences.add(geofence);
-                                 Toast.makeText(getApplicationContext(),geofence.getName(),Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(),geofence.getName(),Toast.LENGTH_SHORT).show();
                             }
 
 
 
                         }
                     }
+                    for (Polyline polyline:line){
+                        polyline.remove();
 
+                    }
+                    line.clear();
                     for (ProximiioGeofence proximiioGeofence : selectedGeofences){
 
                         ProximiioPlace place = (ProximiioPlace)lastFloor.getParent();
@@ -163,12 +149,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 previousLong=node.getLon();
 
                             }
-                            if(line!=null){
-                                line.remove();;
-                            }
-                            line=map.addPolyline(new PolylineOptions().addAll(points).color(Color.RED).width(5));
+
+                            line.add(map.addPolyline(new PolylineOptions().addAll(points).color(Color.RED).width(5)));
 
                             Toast.makeText(getApplicationContext(),totalDistance+"",Toast.LENGTH_SHORT).show();
+                            distance.setText("ShortCut Distance"+totalDistance);
 
 
 
@@ -234,6 +219,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 geofences.add(geofence);
                 Log.d(TAG, "adding geo");
                 // geofence.getn   get geo fence data
+            }
+
+            @Override
+            public void itemsLoaded() {
+                super.itemsLoaded();
+                if(map!=null)
+                    addMarkers();
             }
 
             @Override
@@ -336,14 +328,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 locationListener = null;
             }
         });
-
-        for (ProximiioGeofence proximiioGeofence : geofences) {
-            map.addMarker(new MarkerOptions().position(new LatLng(proximiioGeofence.getLat(), proximiioGeofence.getLon())).title(proximiioGeofence.getName()));
-        }
+        if(geofences.isEmpty())
+            addMarkers();
 
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
+                Toast.makeText(getApplicationContext(),"ggggg",Toast.LENGTH_SHORT).show();
                 if (lastFloor.getParent() != null) {
                     ProximiioPlace place = (ProximiioPlace)lastFloor.getParent();
                     ProximiioPathfindingResult result = place.getPath(currentLatitude,currentLongitude,latLng.latitude,
@@ -364,10 +355,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             previousLong=node.getLon();
 
                         }
-                        if(line!=null){
-                            line.remove();;
+                        for (Polyline polyline:line){
+                            polyline.remove();
+
                         }
-                        line=map.addPolyline(new PolylineOptions().addAll(points).color(Color.RED).width(5));
+                        line.clear();
+                        line.add(map.addPolyline(new PolylineOptions().addAll(points).color(Color.RED).width(5)));
 
                         Toast.makeText(getApplicationContext(),totalDistance+"",Toast.LENGTH_SHORT).show();
 
@@ -380,6 +373,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
+    }
+
+    private void addMarkers() {
+        for (ProximiioGeofence proximiioGeofence : geofences) {
+            map.addMarker(new MarkerOptions().position(new LatLng(proximiioGeofence.getLat(), proximiioGeofence.getLon())).title(proximiioGeofence.getName()));
+        }
     }
 
     // Make sure we have sufficient permissions under Android 6.0 and later
@@ -421,13 +420,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void addProducts() {
-        products.put("Product 1", R.drawable.backgrd);
-        products.put("Product 2", R.drawable.ball);
-        products.put("Product 3", R.drawable.backgrd);
-        products.put("Product 4", R.drawable.ball);
-        products.put("Product 5", R.drawable.backgrd);
-        products.put("Product 6", R.drawable.ball);
-        products.put("Product 7", R.drawable.backgrd);
+        products.put("Mango ", R.drawable.mango);
+        products.put("Apple", R.drawable.apple);
+        products.put("Orange ", R.drawable.orange);
+        products.put("banana ", R.drawable.banana);
+
     }
 
     private void addProductsView() {

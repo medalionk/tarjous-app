@@ -28,15 +28,13 @@
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="7" />
-
+        android:layout_weight="6.5" />
+    <TextView
+        android:id="@+id/distance"
+        android:background="@color/black"
+        android:text="Distance"
+        android:textColor="#ffffff"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"/>
 </LinearLayout>
-
-
-
-
-
-
-
-
-
